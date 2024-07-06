@@ -1,0 +1,51 @@
+#T flip flop
+module t_flipflop (
+    input wire clk,
+    input wire reset,
+    input wire t,
+    output reg q
+);
+    always @(posedge clk or posedge reset)
+    begin
+        if (reset)
+            q <= 1'b0;
+        else
+            q <= (t & ~q) | (~t & q);
+    end
+endmodule
+#T flip flop test bench
+`timescale 1ns/1ns
+
+module tb_t_flipflop;
+    reg clk;
+    reg reset;
+    reg t;
+    wire q;
+
+    t_flipflop my_t_flipflop (
+        .clk(clk),
+        .reset(reset),
+        .t(t),
+        .q(q)
+    );
+
+    always #5 clk = ~clk;
+
+    initial begin
+        $dumpfile("dump_t.vcd");
+        $dumpvars;
+        clk = 0;
+        reset = 1;
+        t = 0;
+        #10 reset = 0;
+        #10 t = 1;
+        #10 t = 0;
+        #100;
+        if (q === 1) begin
+            $display("Test passed! q is %b", q);
+        end else begin
+            $display("Test failed! Expected q=1, but got q=%b", q);
+        end
+        $finish;
+    end
+endmodule
