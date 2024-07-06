@@ -1,0 +1,55 @@
+#dff
+module dff (
+    input wire clk,
+    input wire reset,
+    input wire d,
+    output reg q
+);
+    always @(posedge clk or posedge reset)
+    begin
+        if (reset)
+            q <= 1'b0;
+        else
+            q <= d;
+    end
+endmodule
+#tb_dff
+`timescale 1ns/1ns
+
+module tb_dff;
+    reg clk;
+    reg reset;
+    reg d;
+    wire q;
+
+    dff my_flip_flop (
+        .clk(clk),
+        .reset(reset),
+        .d(d),
+        .q(q)
+    );
+
+    always #5 clk = ~clk;
+
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars;
+        clk = 0;
+        reset = 1;
+        d = 0;
+        #10 reset = 0;
+        #10 d = 1;
+        #10 d = 0;
+        #100;
+        if (q !== 0) begin
+            $display("Test failed! Expected q to be 0, but got %0b", q);
+            $finish;
+        end else begin
+            $display("All tests passed! q is %0b", q);
+            $finish;
+        end
+    end
+endmodule
+
+
+
