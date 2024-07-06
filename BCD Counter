@@ -1,0 +1,59 @@
+#module
+module BCD_Counter (
+  input wire clk,
+  input wire reset,
+  output reg [3:0] ones_digit,
+  output reg [3:0] tens_digit,
+  output reg [3:0] hundreds_digit,
+  output reg [3:0] thousands_digit
+);
+
+  reg [3:0] count;
+
+  always @(posedge clk or posedge reset)
+    if (reset)
+      count <= 4'b0000;
+    else if (count == 4'b1001) begin
+      count <= 4'b0000;
+      ones_digit <= (ones_digit == 4'b1001) ? 4'b0000 : ones_digit + 1;
+      tens_digit <= (ones_digit == 4'b1001) ? (tens_digit == 4'b1001) ? 4'b0000 : tens_digit + 1 : tens_digit;
+      hundreds_digit <= (tens_digit == 4'b1001) ? (hundreds_digit == 4'b1001) ? 4'b0000 : hundreds_digit + 1 : hundreds_digit;
+      thousands_digit <= (hundreds_digit == 4'b1001) ? 4'b0000 : thousands_digit + 1;
+    end else
+      count <= count + 1;
+
+endmodule
+
+#test bench
+module tb_BCD_Counter;
+  reg clk, reset;
+  wire [3:0] ones_digit, tens_digit, hundreds_digit, thousands_digit;
+
+  BCD_Counter uut (
+    .clk(clk),
+    .reset(reset),
+    .ones_digit(ones_digit),
+    .tens_digit(tens_digit),
+    .hundreds_digit(hundreds_digit),
+    .thousands_digit(thousands_digit)
+  );
+
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, tb_BCD_Counter);
+
+    clk = 0;
+    reset = 1;
+
+    #5 reset = 0;
+
+    repeat (200) #5 clk = ~clk;
+
+    repeat (200) begin
+      #5 clk = ~clk;
+    end
+
+    #10 $finish;
+  end
+
+endmodule
