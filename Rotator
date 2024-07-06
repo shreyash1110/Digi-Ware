@@ -1,0 +1,86 @@
+#module 
+module Rotator (
+  input wire clk,
+  input wire reset,
+  input wire load,
+  input wire [1:0] ena,
+  input wire [99:0] data_in,
+  output reg [99:0] q
+);
+
+  always @(posedge clk or posedge reset) begin
+    if (reset) 
+      q <= 100'b0;
+    else 
+      if (load)
+        q <= data_in;
+      else
+        if (ena == 2'b01)
+          q <= {q[0], q[99:1]};
+        else if (ena == 2'b10)
+          q <= {q[98:0], q[99]};
+        else 
+          q <= q;
+  end
+endmodule
+
+
+#test_bench
+module tb_rotator;
+  reg clk, reset, load;
+  reg [1:0] ena;
+  reg [99:0] data_in;
+  wire [99:0] q;
+  
+  always #5 clk = ~clk;
+  
+  Rotator uut (
+    .clk(clk),
+    .reset(reset),
+    .load(load),
+    .ena(ena),
+    .data_in(data_in),
+    .q(q)
+  );
+
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, tb_rotator);
+
+    clk = 0;
+    reset = 0;
+    load = 0;
+    ena = 2'b00;
+    data_in = 100'b0;
+
+    #10 reset = 1;
+
+    #10 reset = 0;
+
+    #10 load = 1;
+
+    #10 data_in = 100'b1010101010;
+
+    #10 load = 0;
+
+    #10 ena = 2'b01; 
+    #10;
+    $display("%b", q);
+
+    #10 ena = 2'b00;
+    #10;
+    $display("%b", q);
+
+    #10 ena = 2'b10;
+    #10;
+    $display("%b", q);
+
+    #10 ena = 2'b11; 
+    #10;
+    $display("%b", q);
+
+    #100 $finish;
+  end
+
+
+endmodule
