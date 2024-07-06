@@ -1,0 +1,47 @@
+#4-bit full adder
+module full_adder (
+    input wire a,
+    input wire b,
+    input wire cin,
+    output reg sum,
+    output reg cout
+);
+    assign {cout, sum} = a + b + cin;
+endmodule
+#4-bit full adder tb
+`timescale 1ns/1ns
+
+module tb_full_adder;
+    reg a, b, cin;
+    wire sum, cout;
+
+    full_adder my_full_adder (
+        .a(a),
+        .b(b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout)
+    );
+
+    initial begin
+        $dumpfile("dump_full_adder.vcd");
+        $dumpvars;
+        
+        a = 2'b00;
+        b = 2'b01;
+        cin = 0;
+
+        #10 a = 2'b11;
+        b = 2'b10;
+        cin = 1;
+
+        #100;
+        if (sum === 2'b10 && cout === 1) begin
+            $display("Test passed! sum is %b and cout is %b", sum, cout);
+        end else begin
+            $display("Test failed! Expected sum=10, cout=1, but got sum=%b, cout=%b", sum, cout);
+        end
+
+        $finish;
+    end
+endmodule
