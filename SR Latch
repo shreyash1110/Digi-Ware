@@ -1,0 +1,51 @@
+#SR latch 
+module sr_latch (
+    input wire s,
+    input wire r,
+    output reg q,
+    output reg q_bar
+);
+    always @(s, r)
+    begin
+        case ({s, r})
+            2'b01: {q, q_bar} <= {1'b0, 1'b1};
+            2'b10: {q, q_bar} <= {1'b1, 1'b0};
+            2'b11: {q, q_bar} <= {1'b0, 1'b0};
+            default: {q, q_bar} <= {q, q_bar};
+        endcase
+    end
+endmodule
+#SR latch tb
+`timescale 1ns/1ns
+
+module tb_sr_latch;
+    reg s;
+    reg r;
+    wire q;
+    wire q_bar;
+
+    sr_latch my_sr_latch (
+        .s(s),
+        .r(r),
+        .q(q),
+        .q_bar(q_bar)
+    );
+
+    initial begin
+        $dumpfile("dump_sr.vcd");
+        $dumpvars;
+        s = 0;
+        r = 0;
+        #10 s = 1;
+        #10 r = 1;
+        #10 s = 0;
+        #10 r = 0;
+        #100;
+        if (q === 0 && q_bar === 1) begin
+            $display("Test passed! q is %0b and q_bar is %0b", q, q_bar);
+        end else begin
+            $display("Test failed! Expected q=0, q_bar=1, but got q=%0b, q_bar=%0b", q, q_bar);
+        end
+        $finish;
+    end
+endmodule
