@@ -1,0 +1,54 @@
+#Shift register
+module shift_register (
+    input wire clk,
+    input wire reset,
+    input wire data_in,
+    output reg [3:0] data_out
+);
+    always @(posedge clk or posedge reset)
+    begin
+        if (reset)
+            data_out <= 4'b0000;
+        else
+            data_out <= {data_out[2:0], data_in};
+    end
+endmodule
+#shift register testbench
+`timescale 1ns/1ns
+
+module tb_shift_register;
+    reg clk;
+    reg reset;
+    reg data_in;
+    wire [3:0] data_out;
+
+    shift_register my_shift_register (
+        .clk(clk),
+        .reset(reset),
+        .data_in(data_in),
+        .data_out(data_out)
+    );
+
+    always #5 clk = ~clk;
+
+    initial begin
+        $dumpfile("dump_shift_register.vcd");
+        $dumpvars;
+        clk = 0;
+        reset = 1;
+        data_in = 0;
+        #10 reset = 0;
+        #10 data_in = 1;
+        #10 data_in = 0;
+        #10 data_in = 1;
+        #100;
+        if (data_out === 1'b0101) begin
+            $display("Test passed! data_out is %b", data_out);
+        end else begin
+            $display("Test failed! Expected data_out=0101, but got data_out=%b", data_out);
+        end
+        $finish;
+    end
+endmodule
+
+
